@@ -15,17 +15,13 @@ Requires: BURST_INTEGRATION_TEST=1 and substrate in PATH.
 from __future__ import annotations
 
 import json
-import threading
-import time
 from unittest.mock import patch
 
 import boto3
 import cloudpickle
-import pytest
 
 from adder.config import Config, load as load_config
-from adder.serialize import serialize_task, serialize_result
-from adder.session import Session, _chunk_items, _task_id, _task_key
+from adder.session import Session, _chunk_items, _task_key
 
 
 def _make_s3(region: str = "us-east-1"):
@@ -61,7 +57,8 @@ def test_map_basic(substrate_config):
     _setup_bucket(s3, cfg.s3_bucket)
 
     items = list(range(10))
-    fn = lambda x: x * 2
+    def fn(x):
+        return x * 2
 
     session = Session(
         cfg=cfg,
@@ -96,7 +93,8 @@ def test_map_result_ordering(substrate_config):
     _setup_bucket(s3, cfg.s3_bucket)
 
     items = list(range(15))
-    fn = lambda x: x ** 2
+    def fn(x):
+        return x**2
 
     session = Session(
         cfg=cfg,
@@ -114,7 +112,7 @@ def test_map_result_ordering(substrate_config):
         chunks = _chunk_items(items, 5)
         # Write results in reverse order to test ordering
         for i in reversed(range(len(chunks))):
-            results = [x ** 2 for x in chunks[i]]
+            results = [x**2 for x in chunks[i]]
             s3_client.put_object(
                 Bucket=cfg.s3_bucket,
                 Key=_task_key(session_id, i, "result"),
@@ -129,7 +127,7 @@ def test_map_result_ordering(substrate_config):
     with patch.object(session, "_launch_workers", side_effect=fake_launch):
         results = session.run(items, fn, "fake-image:latest")
 
-    assert results == [x ** 2 for x in items]
+    assert results == [x**2 for x in items]
 
 
 def test_map_tasks_uploaded_to_s3(substrate_config):
@@ -139,7 +137,8 @@ def test_map_tasks_uploaded_to_s3(substrate_config):
     _setup_bucket(s3, cfg.s3_bucket)
 
     items = [1, 2, 3, 4, 5]
-    fn = lambda x: x + 1
+    def fn(x):
+        return x + 1
 
     session = Session(
         cfg=cfg,
@@ -168,7 +167,7 @@ def test_map_tasks_uploaded_to_s3(substrate_config):
         _simulate_workers(s3_client, cfg, session_id, items, fn, 2)
 
     with patch.object(session, "_launch_workers", side_effect=fake_launch):
-        results = session.run(items, fn, "fake-image:latest")
+        session.run(items, fn, "fake-image:latest")
 
     # .task files should have been present at launch time
     task_keys = [k for k in task_files_at_launch if k.endswith(".task")]
@@ -182,7 +181,8 @@ def test_map_manifest_written(substrate_config):
     _setup_bucket(s3, cfg.s3_bucket)
 
     items = [1, 2, 3]
-    fn = lambda x: x
+    def fn(x):
+        return x
 
     session = Session(
         cfg=cfg,
@@ -221,7 +221,8 @@ def test_map_task_files_cleaned_up(substrate_config):
     _setup_bucket(s3, cfg.s3_bucket)
 
     items = [1, 2]
-    fn = lambda x: x
+    def fn(x):
+        return x
 
     session = Session(
         cfg=cfg,

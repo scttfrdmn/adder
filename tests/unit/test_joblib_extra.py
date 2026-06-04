@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-import json
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from adder.joblib_backend import AdderBackend, _FutureWrapper
 
 
 def test_future_wrapper_get():
     import concurrent.futures
+
     f = concurrent.futures.Future()
     f.set_result(99)
     wrapper = _FutureWrapper(f)
@@ -38,6 +37,7 @@ def test_configure_n_jobs_minus_one():
 def test_apply_async_submits_to_executor():
     """apply_async calls executor.submit and returns a _FutureWrapper."""
     import concurrent.futures
+
     backend = AdderBackend(workers=5)
 
     mock_executor = MagicMock()
@@ -56,6 +56,7 @@ def test_apply_async_submits_to_executor():
 def test_apply_async_with_callback():
     """apply_async calls callback with result when future resolves."""
     import concurrent.futures
+
     backend = AdderBackend(workers=5)
 
     mock_executor = MagicMock()
@@ -68,7 +69,9 @@ def test_apply_async_with_callback():
     backend.apply_async(lambda: "result_value", callback=received.append)
 
     # Callback may be async; wait a bit
-    import time; time.sleep(0.05)
+    import time
+
+    time.sleep(0.05)
     assert "result_value" in received
 
 

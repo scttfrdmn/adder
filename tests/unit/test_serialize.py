@@ -1,7 +1,5 @@
 """Unit tests for adder/serialize.py."""
 
-import pytest
-
 from adder.serialize import (
     deserialize_result,
     deserialize_task,
@@ -12,7 +10,8 @@ from adder.serialize import (
 
 def test_serialize_task_roundtrip_lambda():
     """cloudpickle must handle lambda functions."""
-    fn = lambda x: x * 2
+    def fn(x):
+        return x * 2
     items = [1, 2, 3]
     data = serialize_task(fn, items)
     assert isinstance(data, bytes)
@@ -37,8 +36,11 @@ def test_serialize_task_roundtrip_closure():
 
 def test_serialize_task_includes_python_version():
     """Task payload includes python_version field."""
-    import cloudpickle, sys
-    fn = lambda x: x
+    import cloudpickle
+    import sys
+
+    def fn(x):
+        return x
     data = serialize_task(fn, [])
     payload = cloudpickle.loads(data)
     assert "python_version" in payload
@@ -56,6 +58,7 @@ def test_serialize_result_roundtrip():
 def test_serialize_result_complex_objects():
     """Results can contain complex objects."""
     import datetime
+
     results = [datetime.date(2026, 3, 15), {"nested": [1, 2, 3]}]
     data = serialize_result(results)
     assert deserialize_result(data) == results

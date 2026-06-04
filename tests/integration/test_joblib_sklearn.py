@@ -5,15 +5,13 @@ Requires: BURST_INTEGRATION_TEST=1, substrate in PATH, scikit-learn installed.
 
 from __future__ import annotations
 
-import json
 from unittest.mock import patch
 
 import boto3
-import cloudpickle
 import pytest
 
 from adder.config import load as load_config
-from adder.session import Session, _chunk_items, _task_key
+from adder.session import Session
 
 
 def test_joblib_backend_registered():
@@ -41,7 +39,6 @@ def test_joblib_parallel_basic(substrate_config):
     expected = [x * 2 for x in items]
 
     # We need to intercept Session.run to simulate workers
-    original_run = Session.run
 
     def fake_run(self, items_arg, fn, image_uri):
         # Simulate all workers completing synchronously
@@ -49,9 +46,7 @@ def test_joblib_parallel_basic(substrate_config):
 
     with patch.object(Session, "run", fake_run):
         with joblib.parallel_backend("adder", workers=2):
-            results = joblib.Parallel(n_jobs=-1)(
-                joblib.delayed(double)(x) for x in items
-            )
+            results = joblib.Parallel(n_jobs=-1)(joblib.delayed(double)(x) for x in items)
 
     assert results == expected
 
@@ -77,7 +72,6 @@ def test_joblib_sklearn_grid_search(substrate_config):
     X, y = make_classification(n_samples=50, n_features=4, random_state=42)
     param_grid = {"C": [0.1, 1.0], "kernel": ["rbf", "linear"]}
 
-    original_run = Session.run
 
     def fake_run(self, items_arg, fn, image_uri):
         return [fn(x) for x in items_arg]

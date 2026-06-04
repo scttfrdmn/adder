@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import json
 import re
-import time
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import boto3
 import cloudpickle
@@ -13,10 +11,9 @@ import pytest
 from moto import mock_aws
 
 from adder.config import Config
-from adder.errors import BurstPartialError, BurstTimeoutError
+from adder.errors import BurstPartialError
 from adder.session import (
     Session,
-    SessionStatus,
     _chunk_items,
     _task_id,
     generate_session_id,
@@ -24,6 +21,7 @@ from adder.session import (
 
 
 # ── helpers ──────────────────────────────────────────────────────────────────
+
 
 def _make_cfg() -> Config:
     return Config(
@@ -38,6 +36,7 @@ def _make_cfg() -> Config:
 
 # ── generate_session_id ───────────────────────────────────────────────────────
 
+
 def test_session_id_format():
     sid = generate_session_id()
     assert re.match(r"^py-\d{8}-[0-9a-f]{8}$", sid), f"Bad session ID: {sid}"
@@ -50,6 +49,7 @@ def test_session_id_unique():
 
 # ── _task_id ──────────────────────────────────────────────────────────────────
 
+
 def test_task_id_format():
     assert _task_id(0) == "task-0000"
     assert _task_id(42) == "task-0042"
@@ -57,6 +57,7 @@ def test_task_id_format():
 
 
 # ── _chunk_items ──────────────────────────────────────────────────────────────
+
 
 def test_chunk_items_even():
     chunks = _chunk_items(list(range(10)), 5)
@@ -91,6 +92,7 @@ def test_chunk_items_preserves_order():
 
 # ── Session.run with moto ─────────────────────────────────────────────────────
 
+
 @mock_aws
 def test_session_run_basic():
     """Session.run returns correct results using moto S3."""
@@ -101,16 +103,25 @@ def test_session_run_basic():
     s3.create_bucket(Bucket=cfg.s3_bucket)
 
     # Patch ECS and EC2 to avoid real calls
-    session = Session(cfg, workers=3, cpu=1, memory_gb=1, backend="fargate",
-                      spot=False, max_cost=None, cost_alert=None, timeout=None)
+    session = Session(
+        cfg,
+        workers=3,
+        cpu=1,
+        memory_gb=1,
+        backend="fargate",
+        spot=False,
+        max_cost=None,
+        cost_alert=None,
+        timeout=None,
+    )
 
     items = [1, 2, 3, 4, 5]
-    fn = lambda x: x * 2
+    def fn(x):
+        return x * 2
 
     # Patch _launch_workers to simulate worker completion by writing status files
     def fake_launch(ecs, s3_client, session_id, image_uri, chunk_count):
         # Simulate workers completing: write result/status files
-        import cloudpickle
         chunks = _chunk_items(items, min(3, len(items)))
         for i, chunk in enumerate(chunks):
             results = [x * 2 for x in chunk]
@@ -140,13 +151,22 @@ def test_session_run_out_of_order_results():
     s3.create_bucket(Bucket=cfg.s3_bucket)
 
     items = list(range(6))
-    fn = lambda x: x * 10
+    def fn(x):
+        return x * 10
 
-    session = Session(cfg, workers=3, cpu=1, memory_gb=1, backend="fargate",
-                      spot=False, max_cost=None, cost_alert=None, timeout=None)
+    session = Session(
+        cfg,
+        workers=3,
+        cpu=1,
+        memory_gb=1,
+        backend="fargate",
+        spot=False,
+        max_cost=None,
+        cost_alert=None,
+        timeout=None,
+    )
 
     def fake_launch(ecs, s3_client, session_id, image_uri, chunk_count):
-        import cloudpickle
         chunks = _chunk_items(items, 3)
         # Write results in reverse order (simulating out-of-order completion)
         for i in reversed(range(len(chunks))):
@@ -176,14 +196,23 @@ def test_session_run_partial_failure():
     s3.create_bucket(Bucket=cfg.s3_bucket)
 
     items = [1, 2, 3, 4]
-    fn = lambda x: x
+    def fn(x):
+        return x
 
-    session = Session(cfg, workers=2, cpu=1, memory_gb=1, backend="fargate",
-                      spot=False, max_cost=None, cost_alert=None, timeout=None)
+    session = Session(
+        cfg,
+        workers=2,
+        cpu=1,
+        memory_gb=1,
+        backend="fargate",
+        spot=False,
+        max_cost=None,
+        cost_alert=None,
+        timeout=None,
+    )
 
     def fake_launch(ecs, s3_client, session_id, image_uri, chunk_count):
-        import cloudpickle
-        chunks = _chunk_items(items, 2)
+        _chunk_items(items, 2)
         # First chunk succeeds
         s3_client.put_object(
             Bucket=cfg.s3_bucket,

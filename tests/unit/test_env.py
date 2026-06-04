@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from adder.env import EXCLUDE_PACKAGES, capture_environment
+from adder.env import capture_environment
 
 
 def test_capture_environment_returns_tuple():
@@ -57,7 +57,9 @@ def test_build_image_calls_burst_core():
     from adder.env import build_image
 
     with patch("subprocess.run") as mock_run:
-        mock_run.return_value = MagicMock(returncode=0, stdout="123.dkr.ecr.us-east-1.amazonaws.com/burst-workers-python:abc123\n")
+        mock_run.return_value = MagicMock(
+            returncode=0, stdout="123.dkr.ecr.us-east-1.amazonaws.com/burst-workers-python:abc123\n"
+        )
         uri = build_image("abc123", "/tmp/Dockerfile")
 
     mock_run.assert_called_once()

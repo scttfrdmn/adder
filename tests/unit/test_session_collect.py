@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import patch
 
 import boto3
 import cloudpickle
@@ -11,14 +11,12 @@ import pytest
 from moto import mock_aws
 
 from adder.config import Config
-from adder.errors import BurstPartialError, BurstTimeoutError
+from adder.errors import BurstTimeoutError
 from adder.session import (
     DetachedSession,
     Session,
-    _chunk_items,
     _task_key,
     attach,
-    generate_session_id,
 )
 
 
@@ -35,6 +33,7 @@ def _make_cfg() -> Config:
 
 # ── Session._count_statuses ───────────────────────────────────────────────────
 
+
 @mock_aws
 def test_count_statuses_all_done():
     cfg = _make_cfg()
@@ -49,8 +48,17 @@ def test_count_statuses_all_done():
             Body=b"done",
         )
 
-    sess = Session(cfg, workers=3, cpu=1, memory_gb=1, backend="fargate",
-                   spot=False, max_cost=None, cost_alert=None, timeout=None)
+    sess = Session(
+        cfg,
+        workers=3,
+        cpu=1,
+        memory_gb=1,
+        backend="fargate",
+        spot=False,
+        max_cost=None,
+        cost_alert=None,
+        timeout=None,
+    )
     done, failed = sess._count_statuses(s3, session_id, 3)
     assert done == 3
     assert failed == 0
@@ -67,14 +75,24 @@ def test_count_statuses_mixed():
     s3.put_object(Bucket=cfg.s3_bucket, Key=_task_key(session_id, 1, "status"), Body=b"failed")
     # task 2 has no status yet
 
-    sess = Session(cfg, workers=3, cpu=1, memory_gb=1, backend="fargate",
-                   spot=False, max_cost=None, cost_alert=None, timeout=None)
+    sess = Session(
+        cfg,
+        workers=3,
+        cpu=1,
+        memory_gb=1,
+        backend="fargate",
+        spot=False,
+        max_cost=None,
+        cost_alert=None,
+        timeout=None,
+    )
     done, failed = sess._count_statuses(s3, session_id, 3)
     assert done == 1
     assert failed == 1
 
 
 # ── Session._cleanup_tasks ────────────────────────────────────────────────────
+
 
 @mock_aws
 def test_cleanup_tasks_removes_all():
@@ -91,8 +109,17 @@ def test_cleanup_tasks_removes_all():
                 Body=b"data",
             )
 
-    sess = Session(cfg, workers=2, cpu=1, memory_gb=1, backend="fargate",
-                   spot=False, max_cost=None, cost_alert=None, timeout=None)
+    sess = Session(
+        cfg,
+        workers=2,
+        cpu=1,
+        memory_gb=1,
+        backend="fargate",
+        spot=False,
+        max_cost=None,
+        cost_alert=None,
+        timeout=None,
+    )
     sess._cleanup_tasks(s3, session_id, 2)
 
     # All task files should be gone
@@ -103,6 +130,7 @@ def test_cleanup_tasks_removes_all():
 
 
 # ── DetachedSession ───────────────────────────────────────────────────────────
+
 
 @mock_aws
 def test_detached_session_status():
@@ -207,7 +235,8 @@ def test_detached_session_cleanup():
 
 
 def test_attach_returns_detached_session(tmp_path, monkeypatch):
-    import json, dataclasses
+    import json
+    import dataclasses
     from adder.config import Config
 
     cfg = Config(
@@ -229,6 +258,7 @@ def test_attach_returns_detached_session(tmp_path, monkeypatch):
 
 # ── Session timeout ───────────────────────────────────────────────────────────
 
+
 @mock_aws
 def test_session_run_timeout():
     """BurstTimeoutError when timeout expires before tasks complete."""
@@ -237,10 +267,20 @@ def test_session_run_timeout():
     s3.create_bucket(Bucket=cfg.s3_bucket)
 
     items = [1, 2, 3]
-    fn = lambda x: x
+    def fn(x):
+        return x
 
-    session = Session(cfg, workers=3, cpu=1, memory_gb=1, backend="fargate",
-                      spot=False, max_cost=None, cost_alert=None, timeout=0)  # 0 seconds = immediate
+    session = Session(
+        cfg,
+        workers=3,
+        cpu=1,
+        memory_gb=1,
+        backend="fargate",
+        spot=False,
+        max_cost=None,
+        cost_alert=None,
+        timeout=0,
+    )  # 0 seconds = immediate
 
     def fake_launch(ecs, s3_client, session_id, image_uri, chunk_count):
         # Don't write any results — tasks never complete
@@ -256,6 +296,7 @@ def test_session_run_timeout():
 
 
 # ── Session cost limit ────────────────────────────────────────────────────────
+
 
 def test_session_run_cost_limit_exceeded(tmp_path, monkeypatch):
     """BurstCostLimitError when estimated cost exceeds max_cost."""

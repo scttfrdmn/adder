@@ -32,6 +32,7 @@ def _burst_core_bin() -> str:
 
 def _burst_core_home_path():
     from pathlib import Path
+
     return Path.home() / ".burst" / "bin" / "burst-core"
 
 
@@ -126,6 +127,7 @@ def config_set(key: str, value: str) -> None:
 def config_show() -> None:
     """Print current config."""
     import dataclasses
+
     cfg = load_config()
     click.echo(json.dumps(dataclasses.asdict(cfg), indent=2))
 

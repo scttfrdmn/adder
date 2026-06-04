@@ -116,7 +116,7 @@ def ensure_image(cfg: "Config") -> str:
             imageIds=[{"imageTag": env_hash}],
         )
         if resp.get("imageDetails"):
-            account_id = cfg.ecr_base_uri.split(".")[0]
+            cfg.ecr_base_uri.split(".")[0]
             return f"{cfg.ecr_base_uri}/{repo_name}:{env_hash}"
     except ecr.exceptions.ImageNotFoundException:
         pass

@@ -6,6 +6,7 @@ Reads environment variables, downloads task from S3, executes, uploads result.
 This file is self-contained — no imports from the rest of the adder package.
 It runs inside the ECS container where adder may not be installed.
 """
+
 import os
 import sys
 import traceback

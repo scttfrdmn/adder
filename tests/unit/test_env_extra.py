@@ -2,7 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from adder.config import Config
 from adder.env import _python_version, _render_dockerfile, ensure_image
@@ -40,8 +39,10 @@ def test_ensure_image_uses_existing_ecr_image():
         "imageDetails": [{"imageDigest": "sha256:abc", "imageTags": ["deadbeef"]}]
     }
 
-    with patch("boto3.client", return_value=mock_ecr), \
-         patch("adder.env.capture_environment", return_value=("boto3==1.34", "deadbeef")):
+    with (
+        patch("boto3.client", return_value=mock_ecr),
+        patch("adder.env.capture_environment", return_value=("boto3==1.34", "deadbeef")),
+    ):
         uri = ensure_image(cfg)
 
     assert "deadbeef" in uri
@@ -67,9 +68,11 @@ def test_ensure_image_builds_when_not_found():
 
     expected_uri = "123456789012.dkr.ecr.us-east-1.amazonaws.com/burst-workers-python:newhash"
 
-    with patch("boto3.client", return_value=mock_ecr), \
-         patch("adder.env.capture_environment", return_value=("boto3==1.34", "newHash")), \
-         patch("adder.env.build_image", return_value=expected_uri) as mock_build:
+    with (
+        patch("boto3.client", return_value=mock_ecr),
+        patch("adder.env.capture_environment", return_value=("boto3==1.34", "newHash")),
+        patch("adder.env.build_image", return_value=expected_uri) as mock_build,
+    ):
         uri = ensure_image(cfg)
 
     assert uri == expected_uri

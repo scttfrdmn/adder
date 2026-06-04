@@ -5,7 +5,7 @@ from __future__ import annotations
 import concurrent.futures
 from typing import Any, Callable
 
-from joblib.parallel import ParallelBackendBase, BatchedCalls
+from joblib.parallel import ParallelBackendBase
 
 
 class AdderBackend(ParallelBackendBase):
@@ -50,7 +50,9 @@ class AdderBackend(ParallelBackendBase):
         self._region = region
         self._executor: Any = None
 
-    def configure(self, n_jobs: int = 1, parallel: Any = None, **backend_args: Any) -> tuple[int, Any]:
+    def configure(
+        self, n_jobs: int = 1, parallel: Any = None, **backend_args: Any
+    ) -> tuple[int, Any]:
         """Configure the backend. Called by joblib before dispatching work."""
         n = self.effective_n_jobs(n_jobs)
         self._executor = self._make_executor()

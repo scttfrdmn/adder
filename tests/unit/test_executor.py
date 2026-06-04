@@ -7,6 +7,7 @@ from adder.executor import CloudExecutor, _parse_memory_gb
 
 # ── _parse_memory_gb ──────────────────────────────────────────────────────────
 
+
 def test_parse_memory_gb_gb():
     assert _parse_memory_gb("4GB") == 4
     assert _parse_memory_gb("16GB") == 16
@@ -27,6 +28,7 @@ def test_parse_memory_gb_case_insensitive():
 
 
 # ── CloudExecutor interface ───────────────────────────────────────────────────
+
 
 def test_executor_context_manager():
     """CloudExecutor works as a context manager."""

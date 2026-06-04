@@ -5,9 +5,8 @@ from __future__ import annotations
 import json
 import os
 import stat
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Optional
 
 _DEFAULT_CONFIG_PATH = Path.home() / ".burst" / "config.json"
 
@@ -40,7 +39,13 @@ class Config:
         """Raise BurstSetupError if required fields are missing."""
         from .errors import BurstSetupError
 
-        required = ["s3_bucket", "ecs_cluster", "ecr_base_uri", "execution_role_arn", "task_role_arn"]
+        required = [
+            "s3_bucket",
+            "ecs_cluster",
+            "ecr_base_uri",
+            "execution_role_arn",
+            "task_role_arn",
+        ]
         missing = [f for f in required if not getattr(self, f)]
         if missing:
             raise BurstSetupError(

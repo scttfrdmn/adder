@@ -6,17 +6,17 @@ import concurrent.futures
 import json
 import secrets
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Callable, Iterable, TypeVar
+from typing import Any, Callable, TypeVar
 
 import boto3
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
 from . import cost as cost_mod
 from .config import Config, load as load_config
-from .errors import BurstCostLimitError, BurstPartialError, BurstQuotaError, BurstSetupError, BurstTimeoutError
-from .serialize import deserialize_result, serialize_result, serialize_task
+from .errors import BurstCostLimitError, BurstPartialError, BurstTimeoutError
+from .serialize import deserialize_result, serialize_task
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -137,8 +137,10 @@ class Session:
             max_workers = int(cfg.fargate_quota_vcpu // self._cpu)
             if max_workers < self._workers:
                 cost_mod.print_quota_warning(
-                    self._workers, self._workers * self._cpu,
-                    max_workers, max_workers * self._cpu,
+                    self._workers,
+                    self._workers * self._cpu,
+                    max_workers,
+                    max_workers * self._cpu,
                 )
                 actual_workers = max_workers
 
@@ -197,7 +199,9 @@ class Session:
 
         elapsed = time.monotonic() - start_time
         cost_mod.print_completed(f"{elapsed:.1f}s")
-        actual_cost = cost_mod.estimate_cost(self._cpu, self._memory_gb, actual_workers, elapsed / 3600)
+        actual_cost = cost_mod.estimate_cost(
+            self._cpu, self._memory_gb, actual_workers, elapsed / 3600
+        )
         cost_mod.print_actual_cost(actual_cost)
 
         # Cleanup task files
@@ -222,7 +226,10 @@ class Session:
         subnets_resp = ec2.describe_subnets(Filters=[{"Name": "vpc-id", "Values": [vpc_id]}])
         subnet_ids = [s["SubnetId"] for s in subnets_resp["Subnets"]]
         sg_resp = ec2.describe_security_groups(
-            Filters=[{"Name": "vpc-id", "Values": [vpc_id]}, {"Name": "group-name", "Values": ["default"]}]
+            Filters=[
+                {"Name": "vpc-id", "Values": [vpc_id]},
+                {"Name": "group-name", "Values": ["default"]},
+            ]
         )
         sg_ids = [g["GroupId"] for g in sg_resp["SecurityGroups"]]
 
@@ -398,7 +405,6 @@ class Session:
                 all_errors.extend([None] * len(chunk_results))
             else:
                 # Estimate chunk size from errors
-                chunk_size = 1
                 all_results.append(None)
                 all_errors.append(errors_by_chunk.get(i, "unknown error"))
 
@@ -425,7 +431,9 @@ class Session:
                 pass
         return done, failed
 
-    def _get_status(self, s3: Any, session_id: str, chunk_count: int, start_time: float) -> SessionStatus:
+    def _get_status(
+        self, s3: Any, session_id: str, chunk_count: int, start_time: float
+    ) -> SessionStatus:
         done, failed = self._count_statuses(s3, session_id, chunk_count)
         elapsed = time.monotonic() - start_time
         return SessionStatus(
@@ -437,7 +445,9 @@ class Session:
             workers_active=chunk_count - done - failed,
             elapsed_seconds=elapsed,
             cost_actual=0.0,
-            cost_estimate=cost_mod.estimate_cost_per_hour(self._cpu, self._memory_gb, self._workers),
+            cost_estimate=cost_mod.estimate_cost_per_hour(
+                self._cpu, self._memory_gb, self._workers
+            ),
         )
 
     def _cleanup_tasks(self, s3: Any, session_id: str, chunk_count: int) -> None:
@@ -488,9 +498,9 @@ class DetachedSession:
         resp = s3.get_object(Bucket=cfg.s3_bucket, Key=_manifest_key(self._session_id))
         manifest = json.loads(resp["Body"].read())
         chunk_count = manifest["chunk_count"]
-        cpu = manifest["cpu"]
-        memory_gb = manifest["memory_gb"]
-        workers = manifest["workers_actual"]
+        manifest["cpu"]
+        manifest["memory_gb"]
+        manifest["workers_actual"]
 
         deadline = time.monotonic() + timeout if timeout is not None else None
 

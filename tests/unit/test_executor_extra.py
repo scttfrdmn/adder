@@ -13,6 +13,7 @@ from adder.executor import CloudExecutor
 def _setup_cfg(tmp_path, monkeypatch):
     import dataclasses
     from adder.config import Config
+
     cfg = Config(
         region="us-east-1",
         s3_bucket="burst-us-east-1",
@@ -32,8 +33,10 @@ def test_executor_map_delegates_to_session(tmp_path, monkeypatch):
 
     exc = CloudExecutor(workers=2, cpu=1, memory="2GB")
 
-    with patch("adder.env.ensure_image", return_value="fake-uri"), \
-         patch("adder.session.Session") as MockSession:
+    with (
+        patch("adder.env.ensure_image", return_value="fake-uri"),
+        patch("adder.session.Session") as MockSession,
+    ):
         mock_sess = MagicMock()
         mock_sess.run.return_value = [2, 4, 6]
         MockSession.return_value = mock_sess
@@ -49,8 +52,10 @@ def test_executor_map_multiple_iterables(tmp_path, monkeypatch):
 
     exc = CloudExecutor(workers=2, cpu=1, memory="2GB")
 
-    with patch("adder.env.ensure_image", return_value="fake-uri"), \
-         patch("adder.session.Session") as MockSession:
+    with (
+        patch("adder.env.ensure_image", return_value="fake-uri"),
+        patch("adder.session.Session") as MockSession,
+    ):
         mock_sess = MagicMock()
         mock_sess.run.return_value = [3, 7]
         MockSession.return_value = mock_sess
@@ -62,13 +67,14 @@ def test_executor_map_multiple_iterables(tmp_path, monkeypatch):
 
 def test_executor_submit_returns_future(tmp_path, monkeypatch):
     """CloudExecutor.submit returns a Future that resolves correctly."""
-    import concurrent.futures
     _setup_cfg(tmp_path, monkeypatch)
 
     exc = CloudExecutor(workers=1, cpu=1, memory="2GB")
 
-    with patch("adder.env.ensure_image", return_value="fake-uri"), \
-         patch("adder.session.Session") as MockSession:
+    with (
+        patch("adder.env.ensure_image", return_value="fake-uri"),
+        patch("adder.session.Session") as MockSession,
+    ):
         mock_sess = MagicMock()
         mock_sess.run.return_value = [42]
         MockSession.return_value = mock_sess

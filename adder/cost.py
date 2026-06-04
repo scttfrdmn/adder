@@ -37,7 +37,7 @@ def print_chunks(chunks: int, avg: int) -> None:
 
 
 def print_submitted(n: int) -> None:
-    _console.print(f":rocket: Submitting tasks...")
+    _console.print(":rocket: Submitting tasks...")
     _console.print(f":white_check_mark: Submitted {n} tasks")
 
 
@@ -53,9 +53,7 @@ def print_actual_cost(cost: float) -> None:
     _console.print(f":money_bag: Actual cost: ${cost:.2f}")
 
 
-def print_quota_warning(
-    req: int, req_vcpu: int, actual: int, actual_vcpu: int
-) -> None:
+def print_quota_warning(req: int, req_vcpu: int, actual: int, actual_vcpu: int) -> None:
     _console.print(
         f":warning: Requested {req} workers ({req_vcpu} vCPUs) but quota allows "
         f"{actual} workers ({actual_vcpu} vCPUs)"
@@ -67,6 +65,4 @@ def print_quota_warning(
 
 
 def print_cost_alert(threshold: float) -> None:
-    _console.print(
-        f":warning: Estimated cost exceeds alert threshold of ${threshold:.2f}"
-    )
+    _console.print(f":warning: Estimated cost exceeds alert threshold of ${threshold:.2f}")

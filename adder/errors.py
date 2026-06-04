@@ -41,9 +41,7 @@ class BurstCostLimitError(BurstError):
         self.limit = limit
         self.estimated_cost = estimated
         self.partial_results = partial_results
-        super().__init__(
-            f"Cost limit ${limit:.2f} exceeded (estimated ${estimated:.2f})"
-        )
+        super().__init__(f"Cost limit ${limit:.2f} exceeded (estimated ${estimated:.2f})")
 
 
 class BurstTimeoutError(BurstError):
@@ -53,9 +51,7 @@ class BurstTimeoutError(BurstError):
         self.session_id = session_id
         self.timeout_seconds = timeout_seconds
         self.status = status
-        super().__init__(
-            f"Session {session_id} timed out after {timeout_seconds}s"
-        )
+        super().__init__(f"Session {session_id} timed out after {timeout_seconds}s")
 
 
 class BurstSetupError(BurstError):
@@ -65,6 +61,4 @@ class BurstSetupError(BurstError):
         self.step = step
         self.cause = cause
         self.remediation = remediation
-        super().__init__(
-            f"Setup failed at step {step!r}: {cause}. Remediation: {remediation}"
-        )
+        super().__init__(f"Setup failed at step {step!r}: {cause}. Remediation: {remediation}")

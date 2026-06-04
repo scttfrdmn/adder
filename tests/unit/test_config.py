@@ -3,7 +3,6 @@
 import json
 import os
 import stat
-from pathlib import Path
 
 import pytest
 
@@ -71,6 +70,7 @@ def test_load_ignores_unknown_keys(tmp_path, monkeypatch):
 
 def test_validate_raises_when_fields_missing():
     from adder.errors import BurstSetupError
+
     cfg = Config()  # no s3_bucket, etc.
     with pytest.raises(BurstSetupError) as exc_info:
         cfg.validate()

@@ -67,6 +67,7 @@ class Pool:
         cfg, image_uri = self._get_cfg_and_image()
 
         from .executor import _parse_memory_gb
+
         memory_gb = _parse_memory_gb(self._memory)
 
         sess = Session(

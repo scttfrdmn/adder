@@ -1,7 +1,6 @@
 """Unit tests for adder/cli.py using click's CliRunner."""
 
 import json
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -28,6 +27,7 @@ def mock_config(tmp_path, monkeypatch):
     )
     config_file = tmp_path / "config.json"
     import dataclasses
+
     config_file.write_text(json.dumps(dataclasses.asdict(cfg)))
     monkeypatch.setenv("BURST_CONFIG_PATH", str(config_file))
     return cfg, config_file
@@ -35,17 +35,22 @@ def mock_config(tmp_path, monkeypatch):
 
 # ── version ───────────────────────────────────────────────────────────────────
 
+
 def test_version_shows_adder_version(runner):
-    with patch("shutil.which", return_value=None), \
-         patch("subprocess.run", side_effect=FileNotFoundError()):
+    with (
+        patch("shutil.which", return_value=None),
+        patch("subprocess.run", side_effect=FileNotFoundError()),
+    ):
         result = runner.invoke(main, ["version"])
     assert "0.1.0" in result.output
     assert result.exit_code == 0
 
 
 def test_version_with_burst_core(runner):
-    with patch("shutil.which", return_value="/usr/local/bin/burst-core"), \
-         patch("subprocess.run") as mock_run:
+    with (
+        patch("shutil.which", return_value="/usr/local/bin/burst-core"),
+        patch("subprocess.run") as mock_run,
+    ):
         mock_run.return_value = MagicMock(returncode=0, stdout="0.4.0\n")
         result = runner.invoke(main, ["version"])
     assert "0.1.0" in result.output
@@ -53,6 +58,7 @@ def test_version_with_burst_core(runner):
 
 
 # ── config show ───────────────────────────────────────────────────────────────
+
 
 def test_config_show(runner, mock_config):
     result = runner.invoke(main, ["config", "show"])
@@ -63,6 +69,7 @@ def test_config_show(runner, mock_config):
 
 
 # ── config set ────────────────────────────────────────────────────────────────
+
 
 def test_config_set_string(runner, mock_config):
     cfg, config_file = mock_config
@@ -95,11 +102,14 @@ def test_config_set_unknown_key(runner, mock_config):
 
 # ── setup / status ────────────────────────────────────────────────────────────
 
+
 def test_setup_delegates_to_burst_core(runner):
-    with patch("shutil.which", return_value="/usr/bin/burst-core"), \
-         patch("subprocess.run") as mock_run:
+    with (
+        patch("shutil.which", return_value="/usr/bin/burst-core"),
+        patch("subprocess.run") as mock_run,
+    ):
         mock_run.return_value = MagicMock(returncode=0)
-        result = runner.invoke(main, ["setup"])
+        runner.invoke(main, ["setup"])
     mock_run.assert_called_once()
     cmd = mock_run.call_args[0][0]
     assert "burst-core" in cmd[0]
@@ -117,40 +127,49 @@ def test_setup_fails_without_burst_core(runner):
 
 
 def test_status_delegates_to_burst_core(runner):
-    with patch("shutil.which", return_value="/usr/bin/burst-core"), \
-         patch("subprocess.run") as mock_run:
+    with (
+        patch("shutil.which", return_value="/usr/bin/burst-core"),
+        patch("subprocess.run") as mock_run,
+    ):
         mock_run.return_value = MagicMock(returncode=0)
-        result = runner.invoke(main, ["status"])
+        runner.invoke(main, ["status"])
     cmd = mock_run.call_args[0][0]
     assert "status" in cmd
 
 
 # ── session commands ──────────────────────────────────────────────────────────
 
+
 def test_session_list(runner):
-    with patch("shutil.which", return_value="/usr/bin/burst-core"), \
-         patch("subprocess.run") as mock_run:
+    with (
+        patch("shutil.which", return_value="/usr/bin/burst-core"),
+        patch("subprocess.run") as mock_run,
+    ):
         mock_run.return_value = MagicMock(returncode=0)
-        result = runner.invoke(main, ["session", "list"])
+        runner.invoke(main, ["session", "list"])
     cmd = mock_run.call_args[0][0]
     assert "session" in cmd
     assert "list" in cmd
 
 
 def test_session_status(runner):
-    with patch("shutil.which", return_value="/usr/bin/burst-core"), \
-         patch("subprocess.run") as mock_run:
+    with (
+        patch("shutil.which", return_value="/usr/bin/burst-core"),
+        patch("subprocess.run") as mock_run,
+    ):
         mock_run.return_value = MagicMock(returncode=0)
-        result = runner.invoke(main, ["session", "status", "py-20260315-abc123"])
+        runner.invoke(main, ["session", "status", "py-20260315-abc123"])
     cmd = mock_run.call_args[0][0]
     assert "py-20260315-abc123" in cmd
 
 
 def test_session_cleanup(runner):
-    with patch("shutil.which", return_value="/usr/bin/burst-core"), \
-         patch("subprocess.run") as mock_run:
+    with (
+        patch("shutil.which", return_value="/usr/bin/burst-core"),
+        patch("subprocess.run") as mock_run,
+    ):
         mock_run.return_value = MagicMock(returncode=0)
-        result = runner.invoke(main, ["session", "cleanup", "py-20260315-abc123"])
+        runner.invoke(main, ["session", "cleanup", "py-20260315-abc123"])
     cmd = mock_run.call_args[0][0]
     assert "cleanup" in cmd
 

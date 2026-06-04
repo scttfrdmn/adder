@@ -7,7 +7,6 @@ import threading
 from typing import Any, Callable, Iterable, Iterator, TypeVar
 
 from .config import Config, load as load_config
-from .errors import BurstSetupError
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -102,7 +101,8 @@ class CloudExecutor(concurrent.futures.Executor):
             actual_fn = fn
         else:
             items = list(zip(*iterables))
-            actual_fn = lambda args: fn(*args)  # type: ignore[assignment]
+            def actual_fn(args):
+                return fn(*args)  # type: ignore[assignment]
 
         results = self._run_batch(items, actual_fn, timeout=timeout)
         return iter(results)

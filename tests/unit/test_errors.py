@@ -1,7 +1,5 @@
 """Unit tests for adder/errors.py."""
 
-import pytest
-
 from adder.errors import (
     BurstCostLimitError,
     BurstError,

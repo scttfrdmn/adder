@@ -1,7 +1,5 @@
 """Unit tests for adder/joblib_backend.py."""
 
-import pytest
-
 from adder.joblib_backend import AdderBackend
 
 

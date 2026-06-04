@@ -2,7 +2,6 @@
 
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from adder.pool import Pool
 
@@ -59,8 +58,10 @@ def test_pool_map_calls_session(monkeypatch, tmp_path):
 
     pool = Pool(workers=3, cpu=1, memory="2GB")
 
-    with patch("adder.env.ensure_image", return_value="fake-uri"), \
-         patch("adder.session.Session") as MockSession:
+    with (
+        patch("adder.env.ensure_image", return_value="fake-uri"),
+        patch("adder.session.Session") as MockSession,
+    ):
         mock_sess = MagicMock()
         mock_sess.run.return_value = [2, 4, 6]
         MockSession.return_value = mock_sess
