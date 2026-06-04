@@ -32,7 +32,7 @@ def substrate_server():
 
     port = _free_port()
     proc = subprocess.Popen(
-        ["substrate", "server", "--port", str(port)],
+        ["substrate", "server", "--address", f":{port}"],
         stdout=subprocess.DEVNULL,
         stderr=subprocess.DEVNULL,
     )
@@ -44,7 +44,7 @@ def substrate_server():
 
     while time.monotonic() < deadline:
         try:
-            requests.get(f"{url}/v1/health", timeout=0.5)
+            requests.get(f"{url}/health", timeout=0.5)
             break
         except Exception:
             time.sleep(0.2)
