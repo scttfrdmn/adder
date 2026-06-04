@@ -37,8 +37,8 @@ def substrate_server():
         stderr=subprocess.DEVNULL,
     )
 
-    # Wait for server to be ready
-    deadline = time.monotonic() + 10.0
+    # Wait for server to be ready (60s for CI — substrate may need to compile)
+    deadline = time.monotonic() + 60.0
     url = f"http://localhost:{port}"
     import requests
 
