@@ -29,7 +29,10 @@ def _make_s3(region: str = "us-east-1"):
 
 
 def _setup_bucket(s3, bucket: str) -> None:
-    s3.create_bucket(Bucket=bucket)
+    try:
+        s3.create_bucket(Bucket=bucket)
+    except s3.exceptions.BucketAlreadyOwnedByYou:
+        pass
 
 
 def _simulate_workers(s3, cfg: Config, session_id: str, items: list, fn, n_workers: int):
