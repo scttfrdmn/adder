@@ -33,6 +33,7 @@ class CloudExecutor(concurrent.futures.Executor):
         max_cost: float | None = None,
         cost_alert: float | None = None,
         region: str | None = None,
+        arch: str = "amd64",
     ) -> None:
         self._workers = workers
         self._cpu = cpu
@@ -42,6 +43,7 @@ class CloudExecutor(concurrent.futures.Executor):
         self._max_cost = max_cost
         self._cost_alert = cost_alert
         self._region = region
+        self._arch = arch
         self._cfg: Config | None = None
         self._shutdown = False
         self._lock = threading.Lock()
@@ -132,6 +134,7 @@ class CloudExecutor(concurrent.futures.Executor):
             max_cost=self._max_cost,
             cost_alert=self._cost_alert,
             timeout=int(timeout) if timeout else None,
+            arch=self._arch,
         )
         return sess.run(items, fn, image_uri)
 

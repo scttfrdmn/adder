@@ -23,6 +23,7 @@ def map(
     cost_alert: float | None = None,
     timeout: int | None = None,
     region: str | None = None,
+    arch: str = "amd64",
 ) -> list[U]:
     """Distribute items across AWS ECS workers and collect results.
 
@@ -41,6 +42,7 @@ def map(
         cost_alert: Print warning if estimated cost exceeds this USD amount.
         timeout: Maximum seconds to wait for completion.
         region: AWS region (defaults to ~/.burst/config.json value).
+        arch: CPU architecture for ECS task ("amd64" or "arm64").
 
     Returns:
         List of results in the same order as items.
@@ -61,5 +63,6 @@ def map(
         max_cost=max_cost,
         cost_alert=cost_alert,
         region=region,
+        arch=arch,
     ) as executor:
         return list(executor.map(fn, items, timeout=float(timeout) if timeout else None))

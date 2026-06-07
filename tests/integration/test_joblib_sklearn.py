@@ -7,10 +7,8 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-import boto3
 import pytest
 
-from adder.config import load as load_config
 from adder.executor import CloudExecutor
 
 

@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from typing import Any, Callable, TypeVar
 
 import boto3
+from botocore.config import Config as BotocoreConfig
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
 
 from . import cost as cost_mod
@@ -72,6 +73,12 @@ def _chunk_items(items: list, n: int) -> list[list]:
 
 
 def _boto3_client(service: str, region: str) -> Any:
+    if service == "s3":
+        return boto3.client(
+            service,
+            region_name=region,
+            config=BotocoreConfig(s3={"addressing_style": "path"}),
+        )
     return boto3.client(service, region_name=region)
 
 
@@ -89,6 +96,7 @@ class Session:
         max_cost: float | None,
         cost_alert: float | None,
         timeout: int | None,
+        arch: str = "amd64",
     ) -> None:
         self._cfg = cfg
         self._workers = workers
@@ -99,6 +107,7 @@ class Session:
         self._max_cost = max_cost
         self._cost_alert = cost_alert
         self._timeout = timeout
+        self._arch = arch
 
     def run(self, items: list, fn: Callable, image_uri: str) -> list:
         """Execute the full 7-step lifecycle. Returns results in original order."""
@@ -242,6 +251,10 @@ class Session:
             "requiresCompatibilities": ["FARGATE"],
             "cpu": str(self._cpu * 1024),
             "memory": str(self._memory_gb * 1024),
+            "runtimePlatform": {
+                "cpuArchitecture": "ARM64" if self._arch == "arm64" else "X86_64",
+                "operatingSystemFamily": "LINUX",
+            },
             "containerDefinitions": [
                 {
                     "name": "burst-worker",
@@ -654,7 +667,8 @@ def submit_detached(items: list, fn: Callable, cfg: Config, **kwargs: Any) -> st
         )
 
     # Launch workers (reuse Session helper)
-    sess = Session(cfg, workers, cpu, memory_gb, backend, spot, None, None, None)
+    arch = kwargs.get("arch", "amd64")
+    sess = Session(cfg, workers, cpu, memory_gb, backend, spot, None, None, None, arch=arch)
     sess._launch_workers(ecs, s3, session_id, image_uri, len(chunks))
 
     return session_id
