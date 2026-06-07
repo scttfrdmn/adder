@@ -12,12 +12,6 @@ jobs:
     name: Integration tests
     runs-on: ubuntu-latest
 
-    env:
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
-      AWS_DEFAULT_REGION: us-east-1
-      BURST_INTEGRATION_TEST: "1"
-
     steps:
       - uses: actions/checkout@v4
 
@@ -26,17 +20,24 @@ jobs:
         with:
           go-version: stable
 
-      - name: Set up Python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync --dev
 
       - name: Install substrate
         run: go install github.com/scttfrdmn/substrate/cmd/substrate@latest
 
-      - name: Install hatch
-        run: pip install hatch
-
       - name: Run integration tests
-        run: hatch run integration:test
+        run: uv run pytest tests/ -v
+        env:
+          BURST_INTEGRATION_TEST: "1"
+          AWS_ACCESS_KEY_ID: test
+          AWS_SECRET_ACCESS_KEY: test
+          AWS_DEFAULT_REGION: us-east-1

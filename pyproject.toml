@@ -24,7 +24,6 @@ dev = [
     "moto[s3,ecs,ecr,iam,sts]>=5.0",
     "mypy",
     "ruff",
-    "hatch",
     "requests",
     "scikit-learn",
 ]
@@ -35,31 +34,16 @@ adder = "adder.cli:main"
 [tool.hatch.build.targets.wheel]
 packages = ["adder"]
 
-[tool.hatch.envs.default]
-dependencies = [
+[tool.uv]
+dev-dependencies = [
     "pytest>=7.0",
     "pytest-cov",
     "moto[s3,ecs,ecr,iam,sts]>=5.0",
     "mypy",
     "ruff",
     "requests",
-]
-
-[tool.hatch.envs.default.scripts]
-test = "pytest tests/unit -v {args}"
-test-cov = "pytest tests/unit -v --cov=adder --cov-report=term-missing {args}"
-
-[tool.hatch.envs.integration]
-dependencies = [
-    "pytest>=7.0",
-    "pytest-cov",
-    "moto[s3,ecs,ecr,iam,sts]>=5.0",
-    "requests",
     "scikit-learn",
 ]
-
-[tool.hatch.envs.integration.scripts]
-test = "pytest tests/ -v {args}"
 
 [tool.ruff]
 line-length = 100
