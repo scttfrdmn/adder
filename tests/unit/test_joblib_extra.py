@@ -21,16 +21,15 @@ def test_configure_sets_executor():
     backend = AdderBackend(workers=5)
     with patch("adder.executor.CloudExecutor") as MockExc:
         MockExc.return_value = MagicMock()
-        n, b = backend.configure(n_jobs=5)
+        n = backend.configure(n_jobs=5)
     assert n == 5
-    assert b is backend
     assert backend._executor is not None
 
 
 def test_configure_n_jobs_minus_one():
     backend = AdderBackend(workers=10)
     with patch("adder.executor.CloudExecutor"):
-        n, _ = backend.configure(n_jobs=-1)
+        n = backend.configure(n_jobs=-1)
     assert n == 10
 
 

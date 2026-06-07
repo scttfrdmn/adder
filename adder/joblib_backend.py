@@ -52,11 +52,11 @@ class AdderBackend(ParallelBackendBase):
 
     def configure(
         self, n_jobs: int = 1, parallel: Any = None, **backend_args: Any
-    ) -> tuple[int, Any]:
+    ) -> int:
         """Configure the backend. Called by joblib before dispatching work."""
-        n = self.effective_n_jobs(n_jobs)
+        self.parallel = parallel
         self._executor = self._make_executor()
-        return n, self
+        return self.effective_n_jobs(n_jobs)
 
     def effective_n_jobs(self, n_jobs: int = 1) -> int:
         """Return the effective number of jobs."""
