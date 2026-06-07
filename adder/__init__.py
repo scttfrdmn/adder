@@ -26,7 +26,7 @@ from __future__ import annotations
 
 __version__ = "0.1.0"
 
-from .map import map
+from .map import map, map_tolerant
 from .executor import CloudExecutor
 from .pool import Pool
 from .errors import (
@@ -90,6 +90,7 @@ def attach(session_id: str) -> DetachedSession:
 
 __all__ = [
     "map",
+    "map_tolerant",
     "CloudExecutor",
     "Pool",
     "session",

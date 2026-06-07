@@ -348,7 +348,8 @@ class Session:
         session_id: str,
         chunk_count: int,
         start_time: float,
-    ) -> list:
+        tolerant: bool = False,
+    ) -> list | tuple[list, list]:
         """Poll until all tasks complete, then download and assemble results."""
         cfg = self._cfg
         deadline = start_time + self._timeout if self._timeout is not None else None
@@ -422,8 +423,12 @@ class Session:
                 all_errors.append(errors_by_chunk.get(i, "unknown error"))
 
         if any_failed:
+            if tolerant:
+                return all_results, all_errors
             raise BurstPartialError(results=all_results, errors=all_errors)
 
+        if tolerant:
+            return all_results, all_errors
         return all_results
 
     def _count_statuses(self, s3: Any, session_id: str, chunk_count: int) -> tuple[int, int]:
@@ -502,7 +507,7 @@ class DetachedSession:
             cost_estimate=data.get("cost_estimate_per_hour", 0.0),
         )
 
-    def collect(self, timeout: int | None = None) -> list:
+    def collect(self, timeout: int | None = None, tolerant: bool = False) -> list | tuple[list, list]:
         """Block until all tasks complete, then return results in order."""
         cfg = self._cfg
         s3 = _boto3_client("s3", cfg.region)
@@ -593,8 +598,12 @@ class DetachedSession:
                 all_errors.append(errors_by_chunk.get(i, "unknown error"))
 
         if any_failed:
+            if tolerant:
+                return all_results, all_errors
             raise BurstPartialError(results=all_results, errors=all_errors)
 
+        if tolerant:
+            return all_results, all_errors
         return all_results
 
     def cleanup(self) -> None:
